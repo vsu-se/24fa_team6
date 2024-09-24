@@ -4,7 +4,7 @@ On IntelliJ, you click on the "Get from VCS" button > provide the repo URL (go t
 The .gitignore file contains all of the folders and files that will be ignored by Git. The .idea folder is IntelliJ's project enviorment and prefrences. If you use another IDE, make sure to modify the .gitignore file in your branch so it isn't tracked and versioned.
 
 # Making Changes
-Before you make any changes, be sure to checkout to your branch. You can do this via SourceTree, Cmndr, your terminal, inside your IDE, or whatever program you use.\
+Before you make any changes, be sure to checkout to your branch and pull. You can do this via SourceTree, Cmndr, your terminal, inside your IDE, or whatever program you use. Ideally, you wouldn't need to pull from your own branch since no-one else is making changes in it. NEVER WORK DIRECTLY IN THE MAIN OR DEVELOPMENT BRANCHES\
 The branch structure is as follows:
 ```
 main: the production ready, tested code
