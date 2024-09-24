@@ -1,6 +1,7 @@
 # Setting the project up in your local IDE
 Depending on your IDE, you may be able to clone the project from your IDE or have to clone it separately first.\
-On IntelliJ, you click on the "Get from VCS" button > provide the repo URL (go to the repo homepage and click on the "Code" button then copy the HTTPS URL). This will open the project with all of the remote branches.
+On IntelliJ, you click on the "Get from VCS" button > provide the repo URL (go to the repo homepage and click on the "Code" button then copy the HTTPS URL). This will open the project with all of the remote branches.\
+The .gitignore file contains all of the folders and files that will be ignored by Git. The .idea folder is IntelliJ's project enviorment and prefrences. If you use another IDE, make sure to modify the .gitignore file in your branch so it isn't tracked and versioned.
 
 # Making Changes
 Before you make any changes, be sure to checkout to your branch. You can do this via SourceTree, Cmndr, your terminal, inside your IDE, or whatever program you use.\
