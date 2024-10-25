@@ -9,16 +9,18 @@ import java.util.ArrayList;
 public class AuctionSystemGUI extends JFrame {
     private CategoryController categoryController;
     private CommissionController commissionController;
+    private BuyerPremiumController buyerPremiumController;
     private DefaultListModel<String> categoryListModel;
 
     public AuctionSystemGUI() {
         // Initialize controllers
         categoryController = new CategoryController(new ArrayList<>());
         commissionController = new CommissionController(new Commission(0));
+        buyerPremiumController = new BuyerPremiumController(new BuyerPremium(0));
 
         // Set up the frame
         setTitle("Auction System");
-        setSize(400, 300);
+        setSize(400, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -27,6 +29,8 @@ public class AuctionSystemGUI extends JFrame {
         JButton addCategoryButton = new JButton("Add Category");
         JTextField commissionField = new JTextField(15);
         JButton setCommissionButton = new JButton("Set Commission");
+        JTextField buyerPremiumField = new JTextField(15);
+        JButton setBuyerPremiumButton = new JButton("Set Buyer Premium");
 
         // List model to display categories
         categoryListModel = new DefaultListModel<>();
@@ -63,6 +67,21 @@ public class AuctionSystemGUI extends JFrame {
             }
         });
 
+        setBuyerPremiumButton.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e){
+                try{
+                    double newBuyerPremium = Double.parseDouble(buyerPremiumField.getText());
+                    buyerPremiumController.setBuyerPremium(newBuyerPremium);
+                    buyerPremiumField.setText("");
+                    JOptionPane.showMessageDialog(null, "Buyer Premium set to: " + newBuyerPremium);
+
+                }
+                catch(NumberFormatException ex){
+                    JOptionPane.showMessageDialog(null, "Please enter a valid number.");
+                }
+            }
+        });
         // Set up panels
         JPanel inputPanel = new JPanel();
         inputPanel.add(new JLabel("Category Name:"));
@@ -74,10 +93,16 @@ public class AuctionSystemGUI extends JFrame {
         commissionPanel.add(commissionField);
         commissionPanel.add(setCommissionButton);
 
+        JPanel buyerPremiumPanel = new JPanel();
+        buyerPremiumPanel.add(new JLabel("Buyer Premium:"));
+        buyerPremiumPanel.add(buyerPremiumField);
+        buyerPremiumPanel.add(setBuyerPremiumButton);
+
         // Add components to the frame
         add(scrollPane, BorderLayout.CENTER);
         add(inputPanel, BorderLayout.NORTH);
         add(commissionPanel, BorderLayout.SOUTH);
+        add(buyerPremiumPanel, BorderLayout.EAST);
     }
 
     public static void main(String[] args) {
