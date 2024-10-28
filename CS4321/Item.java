@@ -5,7 +5,7 @@ public class Item {
     private double startingPrice;
     private boolean isActive;
 
-    public Item(String name, double startingPrice, boolean isActive){
+    public Item(String name, double startingPrice){
         this.name = name;
         this.startingPrice = startingPrice;
         this.isActive = true;
