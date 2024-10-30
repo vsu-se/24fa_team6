@@ -3,7 +3,6 @@ package CS4321;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -15,6 +14,8 @@ public class AuctionSystemGUI extends JFrame {
     private DefaultListModel<String> categoryListModel;
     private ItemController itemController;
     private DefaultListModel<String> itemListModel;
+
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public AuctionSystemGUI() {
         // Initialize controllers
@@ -32,90 +33,39 @@ public class AuctionSystemGUI extends JFrame {
         // Create components
         JTextField categoryNameField = new JTextField(15);
         JButton addCategoryButton = new JButton("Add Category");
+        addCategoryButton.setToolTipText("Add a new category");
+
         JTextField commissionField = new JTextField(15);
         JButton setCommissionButton = new JButton("Set Commission");
+        setCommissionButton.setToolTipText("Set the seller's commission");
+
         JTextField buyerPremiumField = new JTextField(15);
         JButton setBuyerPremiumButton = new JButton("Set Buyer Premium");
+        setBuyerPremiumButton.setToolTipText("Set the buyer's premium");
+
         JTextField itemNameField = new JTextField(15);
         JTextField itemPriceField = new JTextField(10);
         JTextField itemEndDateField = new JTextField(10);
         JTextField itemShippingCostField = new JTextField(10);
         JButton addItemButton = new JButton("Add Item");
+        addItemButton.setToolTipText("Add a new auction item");
 
-        // List model to display categories
+        // List models to display categories and items
         categoryListModel = new DefaultListModel<>();
         itemListModel = new DefaultListModel<>();
         JList<String> categoryList = new JList<>(categoryListModel);
         JList<String> itemList = new JList<>(itemListModel);
-        JScrollPane scrollPane = new JScrollPane(categoryList);
+
+        JScrollPane categoryScrollPane = new JScrollPane(categoryList);
         JScrollPane itemScrollPane = new JScrollPane(itemList);
 
-        // Action for adding categories
-        addCategoryButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String categoryName = categoryNameField.getText();
-                if (!categoryName.isEmpty()) {
-                    categoryController.addCategory(categoryName);
-                    categoryListModel.addElement(categoryName);
-                    categoryNameField.setText("");
-                } else {
-                    JOptionPane.showMessageDialog(null, "Category name cannot be empty");
-                }
-            }
-        });
+        // Action listeners
+        addCategoryButton.addActionListener(e -> handleAddCategory(categoryNameField));
+        setCommissionButton.addActionListener(e -> handleSetCommission(commissionField));
+        setBuyerPremiumButton.addActionListener(e -> handleSetBuyerPremium(buyerPremiumField));
+        addItemButton.addActionListener(e -> handleAddItem(itemNameField, itemPriceField, itemEndDateField, itemShippingCostField));
 
-        // Action for setting commission
-        setCommissionButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    double newCommission = Double.parseDouble(commissionField.getText());
-                    commissionController.setSellerCommission(newCommission);
-                    commissionField.setText("");
-                    JOptionPane.showMessageDialog(null, "Commission set to: " + newCommission);
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(null, "Please enter a valid number");
-                }
-            }
-        });
-
-        setBuyerPremiumButton.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed(ActionEvent e){
-                try{
-                    double newBuyerPremium = Double.parseDouble(buyerPremiumField.getText());
-                    buyerPremiumController.setBuyerPremium(newBuyerPremium);
-                    buyerPremiumField.setText("");
-                    JOptionPane.showMessageDialog(null, "Buyer Premium set to: " + newBuyerPremium);
-                }
-                catch(NumberFormatException ex){
-                    JOptionPane.showMessageDialog(null, "Please enter a valid number.");
-                }
-            }
-        });
-
-        addItemButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e){
-                try{
-                    String itemName = itemNameField.getText();
-                    double startingPrice = Double.parseDouble(itemPriceField.getText());
-                    LocalDate endDate = LocalDate.parse(itemEndDateField.getText(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                    double shippingCost = Double.parseDouble(itemShippingCostField.getText());
-                    itemController.listItem(itemName, startingPrice, endDate, shippingCost);
-                    itemListModel.addElement("Item: " + itemName + ", Starting Price: $" + startingPrice + ", End Date: " + endDate + ", Shipping Cost: $" + shippingCost);
-                    itemNameField.setText("");
-                    itemPriceField.setText("");
-                    itemEndDateField.setText("");
-                    itemShippingCostField.setText("");
-                }
-                catch (NumberFormatException | java.time.format.DateTimeParseException ex) {
-                    JOptionPane.showMessageDialog(null, "Please enter valid values for all item fields.");
-                }
-            }
-        });
-        // Set up panels
+        // Organize Panels
         JPanel inputPanel = new JPanel();
         inputPanel.add(new JLabel("Category Name:"));
         inputPanel.add(categoryNameField);
@@ -131,8 +81,7 @@ public class AuctionSystemGUI extends JFrame {
         buyerPremiumPanel.add(buyerPremiumField);
         buyerPremiumPanel.add(setBuyerPremiumButton);
 
-        JPanel itemPanel = new JPanel();
-        itemPanel.setLayout(new GridLayout(5, 2));
+        JPanel itemPanel = new JPanel(new GridLayout(5, 2));
         itemPanel.add(new JLabel("Item Name:"));
         itemPanel.add(itemNameField);
         itemPanel.add(new JLabel("Starting Price:"));
@@ -143,13 +92,72 @@ public class AuctionSystemGUI extends JFrame {
         itemPanel.add(itemShippingCostField);
         itemPanel.add(addItemButton);
 
-        // Add components to the frame
-        add(scrollPane, BorderLayout.WEST);
-        add(itemScrollPane,BorderLayout.CENTER);
-        add(inputPanel, BorderLayout.NORTH);
-        add(commissionPanel, BorderLayout.SOUTH);
-        add(buyerPremiumPanel, BorderLayout.EAST);
+        // Control panel to hold other panels
+        JPanel controlPanel = new JPanel(new GridLayout(3, 1));
+        controlPanel.add(inputPanel);
+        controlPanel.add(commissionPanel);
+        controlPanel.add(buyerPremiumPanel);
+
+        // Add components to frame
+        add(categoryScrollPane, BorderLayout.WEST);
+        add(itemScrollPane, BorderLayout.CENTER);
+        add(controlPanel, BorderLayout.NORTH);
         add(itemPanel, BorderLayout.SOUTH);
+    }
+
+    // Action handling methods
+    private void handleAddCategory(JTextField categoryNameField) {
+        String categoryName = categoryNameField.getText().trim();
+        if (!categoryName.isEmpty()) {
+            categoryController.addCategory(categoryName);
+            categoryListModel.addElement(categoryName);
+            categoryNameField.setText("");
+        } else {
+            JOptionPane.showMessageDialog(this, "Category name cannot be empty");
+        }
+    }
+
+    private void handleSetCommission(JTextField commissionField) {
+        try {
+            double newCommission = Double.parseDouble(commissionField.getText().trim());
+            commissionController.setSellerCommission(newCommission);
+            commissionField.setText("");
+            JOptionPane.showMessageDialog(this, "Commission set to: " + newCommission);
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Please enter a valid number for the commission");
+        }
+    }
+
+    private void handleSetBuyerPremium(JTextField buyerPremiumField) {
+        try {
+            double newBuyerPremium = Double.parseDouble(buyerPremiumField.getText().trim());
+            buyerPremiumController.setBuyerPremium(newBuyerPremium);
+            buyerPremiumField.setText("");
+            JOptionPane.showMessageDialog(this, "Buyer Premium set to: " + newBuyerPremium);
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Please enter a valid number for the buyer premium");
+        }
+    }
+
+    private void handleAddItem(JTextField itemNameField, JTextField itemPriceField, JTextField itemEndDateField, JTextField itemShippingCostField) {
+        try {
+            String itemName = itemNameField.getText().trim();
+            double startingPrice = Double.parseDouble(itemPriceField.getText().trim());
+            LocalDate endDate = LocalDate.parse(itemEndDateField.getText().trim(), DATE_FORMAT);
+            double shippingCost = Double.parseDouble(itemShippingCostField.getText().trim());
+
+            itemController.listItem(itemName, startingPrice, endDate, shippingCost);
+            itemListModel.addElement("Item: " + itemName + ", Starting Price: $" + startingPrice + ", End Date: " + endDate + ", Shipping Cost: $" + shippingCost);
+
+            itemNameField.setText("");
+            itemPriceField.setText("");
+            itemEndDateField.setText("");
+            itemShippingCostField.setText("");
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Please enter valid numerical values for price and shipping cost");
+        } catch (java.time.format.DateTimeParseException ex) {
+            JOptionPane.showMessageDialog(this, "Please enter the date in yyyy-MM-dd format");
+        }
     }
 
     public static void main(String[] args) {
@@ -158,6 +166,4 @@ public class AuctionSystemGUI extends JFrame {
             frame.setVisible(true);
         });
     }
-
-
 }
