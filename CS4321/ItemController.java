@@ -1,6 +1,9 @@
 package CS4321;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+
 public class ItemController {
     private List <Item> items;
 
@@ -15,5 +18,11 @@ public class ItemController {
 
     public List<Item> getItems(){
         return items;
+    }
+
+    public List<Item> getMyAuctions(){
+        return items.stream()
+                .sorted(Comparator.comparing(Item::getEndDate))
+                .collect(Collectors.toList());
     }
 }
