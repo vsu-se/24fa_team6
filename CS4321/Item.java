@@ -8,6 +8,7 @@ public class Item {
     private LocalDate endDate;
     private double shippingCost;
     private boolean isActive;
+    private Bid currentBid;
 
     public Item(String name, double startingPrice, LocalDate endDate, double shippingCost) {
         this.name = name;
@@ -15,6 +16,7 @@ public class Item {
         this.endDate = endDate;
         this.shippingCost = shippingCost;
         this.isActive = true;
+        this,currentBid = null;
     }
 
     public String getName() {
@@ -39,6 +41,18 @@ public class Item {
 
     public void endAuction() {
         this.isActive = false;
+    }
+
+    public Bid getCurrentBid(){
+        return currentBid;
+    }
+
+    public boolean placeBid(Bid bid){
+        if(!isActive || (currentBid != null && bid.getAmount() <= currentBid.getAmount())){
+            return false;
+        }
+        this.currentBid = bid;
+        return true;
     }
 }
 
