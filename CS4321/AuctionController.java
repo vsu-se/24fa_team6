@@ -18,4 +18,13 @@ public class AuctionController {
                 .sorted(Comparator.comparing(Item::getEndDate))
                 .collect(Collectors.toList());
     }
+
+    public boolean placeBid(String itemName, Bid bid){
+        for(Item item: items){
+            if(item.getName().equalsIgnoreCase(itemName)){
+                return item.placeBid(bid);
+            }
+        }
+        return false;
+    }
 }
