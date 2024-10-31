@@ -3,9 +3,12 @@ package CS4321;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 public class AuctionSystemGUI extends JFrame {
     private CategoryController categoryController;
@@ -26,29 +29,25 @@ public class AuctionSystemGUI extends JFrame {
 
         // Set up the frame
         setTitle("Auction System");
-        setSize(600, 600);
+        setSize(800, 600);  // Adjusted width to accommodate sorting options
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
         // Create components
         JTextField categoryNameField = new JTextField(15);
         JButton addCategoryButton = new JButton("Add Category");
-        addCategoryButton.setToolTipText("Add a new category");
 
         JTextField commissionField = new JTextField(15);
         JButton setCommissionButton = new JButton("Set Commission");
-        setCommissionButton.setToolTipText("Set the seller's commission");
 
         JTextField buyerPremiumField = new JTextField(15);
         JButton setBuyerPremiumButton = new JButton("Set Buyer Premium");
-        setBuyerPremiumButton.setToolTipText("Set the buyer's premium");
 
         JTextField itemNameField = new JTextField(15);
         JTextField itemPriceField = new JTextField(10);
         JTextField itemEndDateField = new JTextField(10);
         JTextField itemShippingCostField = new JTextField(10);
         JButton addItemButton = new JButton("Add Item");
-        addItemButton.setToolTipText("Add a new auction item");
 
         // List models to display categories and items
         categoryListModel = new DefaultListModel<>();
@@ -59,11 +58,18 @@ public class AuctionSystemGUI extends JFrame {
         JScrollPane categoryScrollPane = new JScrollPane(categoryList);
         JScrollPane itemScrollPane = new JScrollPane(itemList);
 
+        // Sorting options for auctions
+        JComboBox<String> sortOptions = new JComboBox<>(new String[] {
+                "Sort by Name", "Sort by Starting Price", "Sort by End Date"
+        });
+        JButton refreshButton = new JButton("Refresh List");
+
         // Action listeners
         addCategoryButton.addActionListener(e -> handleAddCategory(categoryNameField));
         setCommissionButton.addActionListener(e -> handleSetCommission(commissionField));
         setBuyerPremiumButton.addActionListener(e -> handleSetBuyerPremium(buyerPremiumField));
         addItemButton.addActionListener(e -> handleAddItem(itemNameField, itemPriceField, itemEndDateField, itemShippingCostField));
+        refreshButton.addActionListener(e -> handleRefreshList(sortOptions));
 
         // Organize Panels
         JPanel inputPanel = new JPanel();
@@ -92,11 +98,18 @@ public class AuctionSystemGUI extends JFrame {
         itemPanel.add(itemShippingCostField);
         itemPanel.add(addItemButton);
 
+        // Sorting panel
+        JPanel sortPanel = new JPanel();
+        sortPanel.add(new JLabel("Sort Auctions By:"));
+        sortPanel.add(sortOptions);
+        sortPanel.add(refreshButton);
+
         // Control panel to hold other panels
-        JPanel controlPanel = new JPanel(new GridLayout(3, 1));
+        JPanel controlPanel = new JPanel(new GridLayout(4, 1));
         controlPanel.add(inputPanel);
         controlPanel.add(commissionPanel);
         controlPanel.add(buyerPremiumPanel);
+        controlPanel.add(sortPanel);
 
         // Add components to frame
         add(categoryScrollPane, BorderLayout.WEST);
@@ -157,6 +170,28 @@ public class AuctionSystemGUI extends JFrame {
             JOptionPane.showMessageDialog(this, "Please enter valid numerical values for price and shipping cost");
         } catch (java.time.format.DateTimeParseException ex) {
             JOptionPane.showMessageDialog(this, "Please enter the date in yyyy-MM-dd format");
+        }
+    }
+
+    private void handleRefreshList(JComboBox<String> sortOptions) {
+        List<Item> items = new ArrayList<>(itemController.getItems());
+
+        switch ((String) sortOptions.getSelectedItem()) {
+            case "Sort by Name":
+                items.sort(Comparator.comparing(Item::getName));
+                break;
+            case "Sort by Starting Price":
+                items.sort(Comparator.comparing(Item::getStartingPrice));
+                break;
+            case "Sort by End Date":
+                items.sort(Comparator.comparing(Item::getEndDate));
+                break;
+        }
+
+        itemListModel.clear();
+        for (Item item : items) {
+            itemListModel.addElement("Item: " + item.getName() + ", Starting Price: $" + item.getStartingPrice() +
+                    ", End Date: " + item.getEndDate() + ", Shipping Cost: $" + item.getShippingCost());
         }
     }
 
