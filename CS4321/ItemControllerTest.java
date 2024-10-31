@@ -68,6 +68,8 @@ class ItemControllerTest {
         assertEquals(3.0, items.get(1).getShippingCost(), "Second item's shipping cost should match");
     }
 
+    // user story 5 Junit test cases
+
     @DisplayName("Test getMyAuctions returns sorted list of items by endDate")
     @Test
     void testGetMyAuctions_sortsItemsByEndDate() {
