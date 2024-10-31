@@ -16,7 +16,7 @@ public class Item {
         this.endDate = endDate;
         this.shippingCost = shippingCost;
         this.isActive = true;
-        this,currentBid = null;
+        this.currentBid = null;
     }
 
     public String getName() {
