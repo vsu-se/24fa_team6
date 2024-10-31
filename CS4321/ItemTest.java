@@ -81,4 +81,51 @@ class ItemTest {
         boolean actualActiveStatus = item.isActive();
         assertFalse(actualActiveStatus, "endAuction should set isActive to false");
     }
+
+    //user story 7 Junit test
+
+    @DisplayName("Test getCurrentBid returns null initially")
+    @Test
+    void testGetCurrentBid_initiallyNull() {
+        Item item = new Item("Test Item", 100.0, LocalDate.of(2024, 12, 31), 5.0);
+        assertNull(item.getCurrentBid(), "getCurrentBid should return null initially");
+    }
+
+    @DisplayName("Test placeBid updates currentBid when bid is higher")
+    @Test
+    void testPlaceBid_updatesCurrentBidWhenHigher() {
+        Item item = new Item("Test Item", 100.0, LocalDate.of(2024, 12, 31), 5.0);
+        Bid firstBid = new Bid("Alice", 120.0);
+        Bid secondBid = new Bid("Bob", 150.0);
+
+        assertTrue(item.placeBid(firstBid), "placeBid should accept a higher bid and return true");
+        assertEquals(firstBid, item.getCurrentBid(), "Current bid should be updated to the first bid");
+
+        assertTrue(item.placeBid(secondBid), "placeBid should accept a higher bid and return true");
+        assertEquals(secondBid, item.getCurrentBid(), "Current bid should be updated to the higher bid");
+    }
+
+    @DisplayName("Test placeBid rejects bid when auction is inactive")
+    @Test
+    void testPlaceBid_rejectsBidWhenInactive() {
+        Item item = new Item("Test Item", 100.0, LocalDate.of(2024, 12, 31), 5.0);
+        item.endAuction();
+        Bid bid = new Bid("Alice", 120.0);
+
+        assertFalse(item.placeBid(bid), "placeBid should return false if the auction is inactive");
+        assertNull(item.getCurrentBid(), "Current bid should remain null if the auction is inactive");
+    }
+
+    @DisplayName("Test placeBid rejects lower bid when a higher bid exists")
+    @Test
+    void testPlaceBid_rejectsLowerBidWhenHigherBidExists() {
+        Item item = new Item("Test Item", 100.0, LocalDate.of(2024, 12, 31), 5.0);
+        Bid firstBid = new Bid("Alice", 150.0);
+        Bid lowerBid = new Bid("Bob", 120.0);
+
+        item.placeBid(firstBid);
+        assertFalse(item.placeBid(lowerBid), "placeBid should reject a lower bid when a higher bid exists");
+        assertEquals(firstBid, item.getCurrentBid(), "Current bid should remain the highest bid placed");
+    }
+
 }
