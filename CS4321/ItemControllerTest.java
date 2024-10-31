@@ -67,5 +67,32 @@ class ItemControllerTest {
         assertEquals(endDate2, items.get(1).getEndDate(), "Second item's end date should match");
         assertEquals(3.0, items.get(1).getShippingCost(), "Second item's shipping cost should match");
     }
+
+    @DisplayName("Test getMyAuctions returns sorted list of items by endDate")
+    @Test
+    void testGetMyAuctions_sortsItemsByEndDate() {
+        LocalDate endDate1 = LocalDate.of(2025, 1, 15);
+        LocalDate endDate2 = LocalDate.of(2024, 12, 31);
+        LocalDate endDate3 = LocalDate.of(2024, 11, 15);
+
+        itemController.listItem("Item1", 20.0, endDate1, 2.0);
+        itemController.listItem("Item2", 30.0, endDate2, 3.0);
+        itemController.listItem("Item3", 25.0, endDate3, 4.0);
+
+        List<Item> sortedItems = itemController.getMyAuctions();
+
+        assertEquals(3, sortedItems.size(), "getMyAuctions should return the correct number of items");
+
+        assertEquals("Item3", sortedItems.get(0).getName(), "First item should be the one with the earliest end date");
+        assertEquals(endDate3, sortedItems.get(0).getEndDate(), "First item's end date should match the earliest date");
+
+        assertEquals("Item2", sortedItems.get(1).getName(), "Second item should be the one with the middle end date");
+        assertEquals(endDate2, sortedItems.get(1).getEndDate(), "Second item's end date should match the middle date");
+
+        assertEquals("Item1", sortedItems.get(2).getName(), "Third item should be the one with the latest end date");
+        assertEquals(endDate1, sortedItems.get(2).getEndDate(), "Third item's end date should match the latest date");
+    }
+
+
 }
 
