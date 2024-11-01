@@ -43,16 +43,23 @@ public class Item {
         this.isActive = false;
     }
 
-    public Bid getCurrentBid(){
+    public Bid getCurrentBid() {
         return currentBid;
     }
 
-    public boolean placeBid(Bid bid){
-        if(!isActive || (currentBid != null && bid.getAmount() <= currentBid.getAmount())){
+    public boolean hasBids() {
+        return currentBid != null;
+    }
+
+    public double getHighestBid() {
+        return currentBid != null ? currentBid.getAmount() : startingPrice; // Use starting price if no bids exist
+    }
+
+    public boolean placeBid(Bid bid) {
+        if(!isActive || (currentBid != null && bid.getAmount() <= currentBid.getAmount())) {
             return false;
         }
         this.currentBid = bid;
         return true;
     }
 }
-
