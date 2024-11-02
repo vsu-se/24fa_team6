@@ -128,4 +128,36 @@ class ItemTest {
         assertEquals(firstBid, item.getCurrentBid(), "Current bid should remain the highest bid placed");
     }
 
+    @DisplayName("Test hasBids returns false initially")
+    @Test
+    void testHasBids_initiallyFalse() {
+        Item item = new Item("Test Item", 100.0, LocalDate.of(2024, 12, 31), 5.0);
+        assertFalse(item.hasBids(), "hasBids should return false if no bids are placed");
+    }
+
+    @DisplayName("Test hasBids returns true when a bid is placed")
+    @Test
+    void testHasBids_returnsTrueWhenBidPlaced() {
+        Item item = new Item("Test Item", 100.0, LocalDate.of(2024, 12, 31), 5.0);
+        Bid bid = new Bid("Alice", 120.0);
+        item.placeBid(bid);
+        assertTrue(item.hasBids(), "hasBids should return true if a bid is placed");
+    }
+
+    @DisplayName("Test getHighestBid returns starting price when no bids placed")
+    @Test
+    void testGetHighestBid_noBids() {
+        Item item = new Item("Test Item", 100.0, LocalDate.of(2024, 12, 31), 5.0);
+        assertEquals(100.0, item.getHighestBid(), "getHighestBid should return starting price if no bids are placed");
+    }
+
+    @DisplayName("Test getHighestBid returns highest bid amount when bids are placed")
+    @Test
+    void testGetHighestBid_withBids() {
+        Item item = new Item("Test Item", 100.0, LocalDate.of(2024, 12, 31), 5.0);
+        Bid bid = new Bid("Alice", 120.0);
+        item.placeBid(bid);
+        assertEquals(120.0, item.getHighestBid(), "getHighestBid should return the highest bid amount when bids are placed");
+    }
+
 }
