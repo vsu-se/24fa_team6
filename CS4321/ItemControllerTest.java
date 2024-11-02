@@ -94,7 +94,47 @@ class ItemControllerTest {
         assertEquals("Item1", sortedItems.get(2).getName(), "Third item should be the one with the latest end date");
         assertEquals(endDate1, sortedItems.get(2).getEndDate(), "Third item's end date should match the latest date");
     }
+    //user story 7 Junit test cases
+    @DisplayName("Test placeBid successfully places bid on an item")
+    @Test
+    void testPlaceBid_successfulBid() {
+        itemController.listItem("Item1", 100.0, LocalDate.of(2024, 12, 31), 5.0);
+        boolean bidPlaced = itemController.placeBid("Item1", "Alice", 120.0);
 
+        assertTrue(bidPlaced, "placeBid should return true when a valid bid is placed");
+        Item item = itemController.getItems().get(0);
+        assertNotNull(item.getCurrentBid(), "Current bid should be set after a successful bid");
+        assertEquals("Alice", item.getCurrentBid().getBidderName(), "Bidder name should match the latest bid");
+        assertEquals(120.0, item.getCurrentBid().getAmount(), "Bid amount should match the latest bid");
+    }
 
+    @DisplayName("Test placeBid rejects bid if bid amount is lower than current bid")
+    @Test
+    void testPlaceBid_rejectsLowerBid() {
+        itemController.listItem("Item1", 100.0, LocalDate.of(2024, 12, 31), 5.0);
+        itemController.placeBid("Item1", "Alice", 120.0);
+
+        boolean bidRejected = itemController.placeBid("Item1", "Bob", 110.0);
+        assertFalse(bidRejected, "placeBid should return false when a lower bid is placed");
+        Item item = itemController.getItems().get(0);
+        assertEquals(120.0, item.getCurrentBid().getAmount(), "Current bid should remain the highest bid placed");
+    }
+
+    @DisplayName("Test placeBid fails if item not found")
+    @Test
+    void testPlaceBid_itemNotFound() {
+        boolean bidResult = itemController.placeBid("NonExistentItem", "Alice", 150.0);
+        assertFalse(bidResult, "placeBid should return false when the item does not exist");
+    }
+
+    @DisplayName("Test placeBid fails if item auction is inactive")
+    @Test
+    void testPlaceBid_inactiveAuction() {
+        itemController.listItem("Item1", 100.0, LocalDate.of(2024, 12, 31), 5.0);
+        itemController.getItems().get(0).endAuction();
+
+        boolean bidResult = itemController.placeBid("Item1", "Alice", 120.0);
+        assertFalse(bidResult, "placeBid should return false when the auction is inactive");
+    }
 }
 
