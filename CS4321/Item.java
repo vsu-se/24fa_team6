@@ -8,6 +8,7 @@ public class Item {
     private LocalDate endDate;
     private double shippingCost;
     private boolean isActive;
+    private String category;
     private Bid currentBid;
 
     public Item(String name, double startingPrice, LocalDate endDate, double shippingCost) {
@@ -34,6 +35,11 @@ public class Item {
     public double getShippingCost() {
         return shippingCost;
     }
+
+    public String getCategory(){
+        return category;
+    }
+
 
     public boolean isActive() {
         return isActive;
