@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class BidTest {
 
+    //user story 7
     @DisplayName("Test Bid constructor initializes fields correctly")
     @Test
     void testConstructor_initializesFieldsCorrectly() {
