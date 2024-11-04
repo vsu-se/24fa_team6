@@ -117,7 +117,7 @@ public class AuctionSystemGUI extends JFrame {
         concludedAuctionsTextArea.setEditable(false);
         JButton refreshConcludedAuctionsButton = new JButton("Refresh Concluded Auctions");
         refreshConcludedAuctionsButton.addActionListener(e -> {
-            List<Item> concludedAuctions = auctionController.getConcludedAuctions();
+            List<Item> concludedAuctions = auctionController.getConcludedAuctions(); // List all ended auctions
             concludedAuctionsTextArea.setText("");
             for (Item item : concludedAuctions) {
                 concludedAuctionsTextArea.append("Item: " + item.getName() + ", End Date: " + item.getEndDate() + ", Price: $" + item.getHighestBid() + ", High Bidder: " + item.getCurrentBidder() + "\n");
