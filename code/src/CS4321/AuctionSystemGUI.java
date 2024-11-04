@@ -117,7 +117,7 @@ public class AuctionSystemGUI extends JFrame {
         concludedAuctionsTextArea.setEditable(false);
         JButton refreshConcludedAuctionsButton = new JButton("Refresh Concluded Auctions");
         refreshConcludedAuctionsButton.addActionListener(e -> {
-            List<Item> concludedAuctions = auctionController.getConcludedAuctions();
+            List<Item> concludedAuctions = auctionController.getConcludedAuctions(); // List all ended auctions
             concludedAuctionsTextArea.setText("");
             for (Item item : concludedAuctions) {
                 concludedAuctionsTextArea.append("Item: " + item.getName() + ", End Date: " + item.getEndDate() + ", Price: $" + item.getHighestBid() + ", High Bidder: " + item.getCurrentBidder() + "\n");
@@ -188,8 +188,23 @@ public class AuctionSystemGUI extends JFrame {
         myAuctionsPanel.add(new JScrollPane(auctionsTextArea), BorderLayout.CENTER);
         myAuctionsPanel.add(refreshButton, BorderLayout.SOUTH);
 
+        // Seller's Report Panel
+        JPanel reportPanel = new JPanel(new BorderLayout());
+        reportPanel.setBorder(BorderFactory.createTitledBorder("Seller's Report"));
+        JTextArea reportTextArea = new JTextArea();
+        reportTextArea.setEditable(false);
+        JButton generateReportButton = new JButton("Generate Report");
+        generateReportButton.addActionListener(e -> {
+            AuctionReport auctionReport = new AuctionReport(commissionController, buyerPremiumController, itemController, auctionController);
+            String report = auctionReport.generateSellerReport();
+            reportTextArea.setText(report);
+        });
+        reportPanel.add(new JScrollPane(reportTextArea), BorderLayout.CENTER);
+        reportPanel.add(generateReportButton, BorderLayout.SOUTH);
+
         panel.add(listItemPanel, BorderLayout.NORTH);
         panel.add(myAuctionsPanel, BorderLayout.CENTER);
+        panel.add(reportPanel, BorderLayout.SOUTH);
 
         return panel;
     }
@@ -251,9 +266,24 @@ public class AuctionSystemGUI extends JFrame {
         bidPanel.add(bidAmountField);
         bidPanel.add(placeBidButton);
 
+        // Buyer's Report Panel
+        JPanel reportPanel = new JPanel(new BorderLayout());
+        reportPanel.setBorder(BorderFactory.createTitledBorder("Buyer's Report"));
+        JTextArea reportTextArea = new JTextArea();
+        reportTextArea.setEditable(false);
+        JButton generateReportButton = new JButton("Generate Report");
+        generateReportButton.addActionListener(e -> {
+            AuctionReport auctionReport = new AuctionReport(commissionController, buyerPremiumController, itemController, auctionController);
+            String report = auctionReport.generateBuyerReport(currentUser);
+            reportTextArea.setText(report);
+        });
+        reportPanel.add(new JScrollPane(reportTextArea), BorderLayout.CENTER);
+        reportPanel.add(generateReportButton, BorderLayout.SOUTH);
+
         panel.add(new JScrollPane(activeAuctionsTextArea), BorderLayout.CENTER);
         panel.add(refreshAuctionsButton, BorderLayout.NORTH);
         panel.add(bidPanel, BorderLayout.SOUTH);
+        panel.add(reportPanel, BorderLayout.EAST);
 
         return panel;
     }
