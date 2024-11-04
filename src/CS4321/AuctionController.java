@@ -1,6 +1,7 @@
 package CS4321;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -59,4 +60,14 @@ public class AuctionController {
                 .sorted(Comparator.comparing(Item::getEndDate).reversed())
                 .collect(Collectors.toList());
     }
+
+    public List<Bid> getBidHistory(String itemName) {
+        for (Item item : items) {
+            if (item.getName().equalsIgnoreCase(itemName)) {
+                return item.getBidHistory();
+            }
+        }
+        return new ArrayList<>();
+    }
+
 }
