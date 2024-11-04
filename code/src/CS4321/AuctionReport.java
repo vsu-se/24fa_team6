@@ -18,10 +18,9 @@ public class AuctionReport {
     }
 
     public String generateSellerReport() {
-        List<Item> items = itemController.getMyAuctions();
-        items = items.stream()
-                .filter(item -> !item.isActive())
-                .sorted(Comparator.comparing(Item::getEndDate).reversed())
+        List<Item> soldItems = itemController.getItems().stream()
+                .filter(item -> !item.isActive()) // Only get concluded auctions
+                .sorted(Comparator.comparing(Item::getEndDate).reversed()) // Sort by end date
                 .collect(Collectors.toList());
 
         StringBuilder report = new StringBuilder();
@@ -32,16 +31,20 @@ public class AuctionReport {
         report.append(String.format("%-20s %-10s %-10s %-10s %-10s\n", "Name", "Price", "Commission", "Shipping", "Date"));
         report.append("-------------------------------------------------------------\n");
 
-        for (Item item : items) {
-            report.append(String.format("%-20s %-10.2f %-10.2f %-10.2f %-10s\n",
-                    item.getName(), item.getHighestBid(), item.getSellerCommission(commissionController.getSellerCommission()), item.getShippingCost(), item.getEndDate()));
+        for (Item item : soldItems) {
+            double highestBid = item.getHighestBid();
+            double sellerCommission = item.getSellerCommission(commissionController.getSellerCommission());
+            double shippingCost = item.getShippingCost();
 
-            totalWinningBids += item.getHighestBid();
-            totalShippingCosts += item.getShippingCost();
-            totalSellerCommissions += item.getSellerCommission(commissionController.getSellerCommission());
+            report.append(String.format("%-20s %-10.2f %-10.2f %-10.2f %-10s\n",
+                    item.getName(), highestBid, sellerCommission, shippingCost, item.getEndDate()));
+
+            totalWinningBids += highestBid;
+            totalShippingCosts += shippingCost;
+            totalSellerCommissions += sellerCommission;
         }
 
-        double totalProfits = totalWinningBids - totalSellerCommissions;
+        double totalProfits = totalWinningBids - totalSellerCommissions - totalShippingCosts;
 
         report.append("\nSummary:\n");
         report.append(String.format("Total Winning Bids: %.2f\n", totalWinningBids));
@@ -52,13 +55,12 @@ public class AuctionReport {
         return report.toString();
     }
 
-    public String generateBuyerReport(String currentUser) {
-        auctionController.checkAndEndAuctions();
-        List<Item> items = auctionController.getConcludedAuctions();
 
-        items = items.stream()
-                .filter(item -> item.getCurrentBidder().equals(currentUser))
-                .sorted(Comparator.comparing(Item::getEndDate).reversed())
+    public String generateBuyerReport(String currentUser) {
+        auctionController.checkAndEndAuctions(); // Ensure auctions are checked and ended
+        List<Item> purchasedItems = auctionController.getConcludedAuctions().stream()
+                .filter(item -> item.hasBidFromUser(currentUser)) // Filter items that current user won
+                .sorted(Comparator.comparing(Item::getEndDate).reversed()) // Sort by end date
                 .collect(Collectors.toList());
 
         StringBuilder report = new StringBuilder();
@@ -69,14 +71,17 @@ public class AuctionReport {
         report.append(String.format("%-20s %-10s %-10s %-10s %-10s\n", "Name", "Price", "Buyer's Premium", "Shipping", "Date"));
         report.append("-------------------------------------------------------------\n");
 
-        for (Item item : items) {
-            double buyersPremium = item.getHighestBid() * (buyerPremiumController.getBuyerPremium() / 100);
-            report.append(String.format("%-20s %-10.2f %-10.2f %-10.2f %-10s\n",
-                    item.getName(), item.getHighestBid(), buyersPremium, item.getShippingCost(), item.getEndDate()));
+        for (Item item : purchasedItems) {
+            double highestBid = item.getHighestBid();
+            double buyerPremium = highestBid * (buyerPremiumController.getBuyerPremium() / 100);
+            double shippingCost = item.getShippingCost();
 
-            totalAmountBought += item.getHighestBid();
-            totalBuyersPremiums += buyersPremium;
-            totalShippingCosts += item.getShippingCost();
+            report.append(String.format("%-20s %-10.2f %-10.2f %-10.2f %-10s\n",
+                    item.getName(), highestBid, buyerPremium, shippingCost, item.getEndDate()));
+
+            totalAmountBought += highestBid;
+            totalBuyersPremiums += buyerPremium;
+            totalShippingCosts += shippingCost;
         }
 
         report.append("\nSummary:\n");
