@@ -75,6 +75,10 @@ public class Item {
         return Period.between(currentDate, endDate);
     }
 
+    public double getSellerCommission(double commissionRate) {
+        return getHighestBid() * (commissionRate / 100);
+    }
+
     public boolean placeBid(Bid bid) {
         if (!isActive || (bid.getAmount() <= getHighestBid())) {
             return false;

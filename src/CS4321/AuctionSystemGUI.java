@@ -188,8 +188,23 @@ public class AuctionSystemGUI extends JFrame {
         myAuctionsPanel.add(new JScrollPane(auctionsTextArea), BorderLayout.CENTER);
         myAuctionsPanel.add(refreshButton, BorderLayout.SOUTH);
 
+        // Seller's Report Panel
+        JPanel reportPanel = new JPanel(new BorderLayout());
+        reportPanel.setBorder(BorderFactory.createTitledBorder("Seller's Report"));
+        JTextArea reportTextArea = new JTextArea();
+        reportTextArea.setEditable(false);
+        JButton generateReportButton = new JButton("Generate Report");
+        generateReportButton.addActionListener(e -> {
+            AuctionReport auctionReport = new AuctionReport(commissionController, buyerPremiumController, itemController);
+            String report = auctionReport.generateReport();
+            reportTextArea.setText(report);
+        });
+        reportPanel.add(new JScrollPane(reportTextArea), BorderLayout.CENTER);
+        reportPanel.add(generateReportButton, BorderLayout.SOUTH);
+
         panel.add(listItemPanel, BorderLayout.NORTH);
         panel.add(myAuctionsPanel, BorderLayout.CENTER);
+        panel.add(reportPanel, BorderLayout.SOUTH);
 
         return panel;
     }
