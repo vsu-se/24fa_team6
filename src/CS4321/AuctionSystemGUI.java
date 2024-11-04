@@ -190,7 +190,7 @@ public class AuctionSystemGUI extends JFrame {
             activeAuctionsTextArea.setText("");
             for (Item item : activeAuctions) {
                 if (item.hasBidFromUser(currentUser)) {
-                    activeAuctionsTextArea.append("** Item: " + item.getName() + ", Current Bid: $" + item.getHighestBid() + ", End Date: " + item.getEndDate() + ", High Bidder: " + item.getCurrentBidder() + "\n");
+                    activeAuctionsTextArea.append("** Item: " + item.getName() + ", Current Bid: $" + item.getHighestBid() + ", End Date: " + item.getEndDate() + ", High Bidder: " + item.getCurrentBidder() + ", Time Remaining: " + item.getTimeRemaining().getDays() + " days" + "\n");
                 } else {
                     activeAuctionsTextArea.append("    Item: " + item.getName() + ", Current Bid: $" + item.getHighestBid() + ", End Date: " + item.getEndDate() + ", High Bidder: " + item.getCurrentBidder() + "\n");
                 }

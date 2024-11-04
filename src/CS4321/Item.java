@@ -1,6 +1,7 @@
 package CS4321;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.LinkedList;
 
 public class Item {
@@ -67,6 +68,11 @@ public class Item {
 
     public void setActive(boolean active) {
         this.isActive = active;
+    }
+
+    public Period getTimeRemaining() {
+        LocalDate currentDate = LocalDate.now();
+        return Period.between(currentDate, endDate);
     }
 
     public boolean placeBid(Bid bid) {
