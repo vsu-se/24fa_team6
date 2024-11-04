@@ -49,7 +49,7 @@ public class AuctionSystemGUI extends JFrame {
 
     private JPanel createAdminPanel() {
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(3, 1));
+        panel.setLayout(new GridLayout(4, 1));
 
         // Category Management
         JPanel categoryPanel = new JPanel();
@@ -110,9 +110,26 @@ public class AuctionSystemGUI extends JFrame {
         buyerPremiumPanel.add(premiumField);
         buyerPremiumPanel.add(setPremiumButton);
 
+        // Concluded Auctions
+        JPanel concludedAuctionsPanel = new JPanel(new BorderLayout());
+        concludedAuctionsPanel.setBorder(BorderFactory.createTitledBorder("Concluded Auctions"));
+        JTextArea concludedAuctionsTextArea = new JTextArea();
+        concludedAuctionsTextArea.setEditable(false);
+        JButton refreshConcludedAuctionsButton = new JButton("Refresh Concluded Auctions");
+        refreshConcludedAuctionsButton.addActionListener(e -> {
+            List<Item> concludedAuctions = auctionController.getConcludedAuctions();
+            concludedAuctionsTextArea.setText("");
+            for (Item item : concludedAuctions) {
+                concludedAuctionsTextArea.append("Item: " + item.getName() + ", End Date: " + item.getEndDate() + ", Price: $" + item.getHighestBid() + ", High Bidder: " + item.getCurrentBidder() + "\n");
+            }
+        });
+        concludedAuctionsPanel.add(new JScrollPane(concludedAuctionsTextArea), BorderLayout.CENTER);
+        concludedAuctionsPanel.add(refreshConcludedAuctionsButton, BorderLayout.SOUTH);
+
         panel.add(categoryPanel);
         panel.add(commissionPanel);
         panel.add(buyerPremiumPanel);
+        panel.add(concludedAuctionsPanel);
 
         return panel;
     }

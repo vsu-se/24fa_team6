@@ -52,4 +52,11 @@ public class AuctionController {
             }
         }
     }
+
+    public List<Item> getConcludedAuctions() {
+        return items.stream()
+                .filter(item -> !item.isActive())
+                .sorted(Comparator.comparing(Item::getEndDate).reversed())
+                .collect(Collectors.toList());
+    }
 }
