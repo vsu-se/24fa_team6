@@ -1,6 +1,7 @@
 package CS4321;
 
 import java.time.LocalDate;
+import java.util.LinkedList;
 
 public class Item {
     private String name;
@@ -9,7 +10,7 @@ public class Item {
     private double shippingCost;
     private boolean isActive;
     private String category;
-    private Bid currentBid;
+    private LinkedList<Bid> bids;
 
     public Item(String name, double startingPrice, LocalDate endDate, double shippingCost) {
         this.name = name;
@@ -17,7 +18,7 @@ public class Item {
         this.endDate = endDate;
         this.shippingCost = shippingCost;
         this.isActive = true;
-        this.currentBid = null;
+        this.bids = new LinkedList<>();
     }
 
     public String getName() {
@@ -40,7 +41,6 @@ public class Item {
         return category;
     }
 
-
     public boolean isActive() {
         return isActive;
     }
@@ -50,22 +50,39 @@ public class Item {
     }
 
     public Bid getCurrentBid() {
-        return currentBid;
+        return bids.peek();
+    }
+
+    public String getCurrentBidder() {
+        return bids.peek() != null ? bids.peek().getBidderName() : "";
     }
 
     public boolean hasBids() {
-        return currentBid != null;
+        return bids.peek() != null;
     }
 
     public double getHighestBid() {
-        return currentBid != null ? currentBid.getAmount() : startingPrice; // Use starting price if no bids exist
+        return bids.peek() != null ? bids.peek().getAmount() : startingPrice; // Use starting price if no bids exist
+    }
+
+    public void setActive(boolean active) {
+        this.isActive = active;
     }
 
     public boolean placeBid(Bid bid) {
-        if(!isActive || (currentBid != null && bid.getAmount() <= currentBid.getAmount())) {
+        if (!isActive || (bid.getAmount() <= getHighestBid())) {
             return false;
         }
-        this.currentBid = bid;
+        this.bids.push(bid);
         return true;
+    }
+
+    public boolean hasBidFromUser(String bidderName) {
+        for (Bid bid : bids) {
+            if (bid.getBidderName().equalsIgnoreCase(bidderName)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
