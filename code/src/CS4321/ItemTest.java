@@ -160,4 +160,13 @@ class ItemTest {
         assertEquals(120.0, item.getHighestBid(), "getHighestBid should return the highest bid amount when bids are placed");
     }
 
+    //user story 8
+    @DisplayName("Test getCurrentBid returns my bid when I have placed a bid")
+    @Test
+    void testGetCurrentBid_returnsMyBid() {
+        Item item = new Item("Test Item", 100.0, LocalDate.of(2024, 12, 31), 5.0);
+        Bid myBid = new Bid("Alice", 120.0);
+        item.placeBid(myBid);
+        assertEquals(myBid, item.getCurrentBid(), "getCurrentBid should return my bid when I have placed a bid");
+    }
 }
