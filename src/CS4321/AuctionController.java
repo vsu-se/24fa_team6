@@ -8,9 +8,15 @@ import java.util.stream.Collectors;
 
 public class AuctionController {
     private List<Item> items;
+    private String timeSetting;
+
+    public AuctionController(List<Item> items, String timeSetting){
+        this.items = items;
+        this.timeSetting = timeSetting;
+    }
 
     public AuctionController(List<Item> items){
-        this.items = items;
+        this(items, "live");
     }
 
     //This method shows active auctions sorted by the end date
@@ -41,12 +47,25 @@ public class AuctionController {
 
     public void endAuction(Item item) {
         item.setActive(false);
-        // May need some more code here
+        // May need some more code here later on
+    }
+
+    public LocalDate getCurrentDate(){
+        if (timeSetting.equals("live")) {
+            return LocalDate.now();
+        }
+        else {
+            return LocalDate.parse(timeSetting);
+        }
+    }
+
+    public void setTimeSetting(String timeSetting) {
+        this.timeSetting = timeSetting;
     }
 
     public void checkAndEndAuctions() {
         List<Item> activeAuctions = getActiveAuctions();
-        LocalDate now = LocalDate.now();
+        LocalDate now = getCurrentDate();
         for (Item item : activeAuctions) {
             if (item.getEndDate().isBefore(now) || item.getEndDate().isEqual(now)) {
                 endAuction(item);

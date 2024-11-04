@@ -49,7 +49,7 @@ public class AuctionSystemGUI extends JFrame {
 
     private JPanel createAdminPanel() {
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(5, 1));
+        panel.setLayout(new GridLayout(6, 1));
 
         // Category Management
         JPanel categoryPanel = new JPanel();
@@ -152,11 +152,30 @@ public class AuctionSystemGUI extends JFrame {
         bidHistoryPanel.add(bidHistoryItemNameField);
         bidHistoryPanel.add(viewBidHistoryButton);
 
+        // Set Current Date
+        JPanel currentDatePanel = new JPanel();
+        currentDatePanel.setBorder(BorderFactory.createTitledBorder("Set Current Date"));
+        JTextField currentDateField = new JTextField(10); // Format: yyyy-mm-dd
+        JButton setCurrentDateButton = new JButton("Set Current Date");
+        setCurrentDateButton.addActionListener((ActionEvent e) -> {
+            try {
+                String currentDate = currentDateField.getText();
+                auctionController.setTimeSetting(currentDate);
+                JOptionPane.showMessageDialog(this, "Current date set to: " + currentDate);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Please enter a valid date in the format yyyy-mm-dd.");
+            }
+        });
+        currentDatePanel.add(new JLabel("Current Date (yyyy-mm-dd) or 'live':"));
+        currentDatePanel.add(currentDateField);
+        currentDatePanel.add(setCurrentDateButton);
+
         panel.add(categoryPanel);
         panel.add(commissionPanel);
         panel.add(buyerPremiumPanel);
         panel.add(concludedAuctionsPanel);
         panel.add(bidHistoryPanel);
+        panel.add(currentDatePanel);
 
         return panel;
     }
@@ -253,7 +272,7 @@ public class AuctionSystemGUI extends JFrame {
             activeAuctionsTextArea.setText("");
             for (Item item : activeAuctions) {
                 if (item.hasBidFromUser(currentUser)) {
-                    activeAuctionsTextArea.append("** Item: " + item.getName() + ", Current Bid: $" + item.getHighestBid() + ", End Date: " + item.getEndDate() + ", High Bidder: " + item.getCurrentBidder() + ", Time Remaining: " + item.getTimeRemaining().getDays() + " days" + "\n");
+                    activeAuctionsTextArea.append("** Item: " + item.getName() + ", Current Bid: $" + item.getHighestBid() + ", End Date: " + item.getEndDate() + ", High Bidder: " + item.getCurrentBidder() + ", Time Remaining: " + item.getTimeRemaining(auctionController.getCurrentDate()).getDays() + " days" + "\n");
                 } else {
                     activeAuctionsTextArea.append("    Item: " + item.getName() + ", Current Bid: $" + item.getHighestBid() + ", End Date: " + item.getEndDate() + ", High Bidder: " + item.getCurrentBidder() + "\n");
                 }

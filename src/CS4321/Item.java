@@ -72,8 +72,7 @@ public class Item {
         this.isActive = active;
     }
 
-    public Period getTimeRemaining() {
-        LocalDate currentDate = LocalDate.now();
+    public Period getTimeRemaining(LocalDate currentDate) {
         return Period.between(currentDate, endDate);
     }
 
