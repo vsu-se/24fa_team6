@@ -33,7 +33,7 @@ class AuctionControllerTest {
     @DisplayName("Test getActiveAuctions filters and sorts active items by end date")
     @Test
     void testGetActiveAuction(){
-        List<Item> activeAuctions = auctionController.getActiveAuction();
+        List<Item> activeAuctions = auctionController.getActiveAuctions();
         List<Item> expectedItems = List.of(items.get(2), items.get(4), items.get(1), items.get(0));
         assertEquals(expectedItems.size(), activeAuctions.size(), "Active auctions should match expected count");
         for (int i = 0; i < expectedItems.size(); i++){
@@ -47,7 +47,7 @@ class AuctionControllerTest {
     void testGetActiveAuctions_emptyListIfNoActiveItems(){
         items.forEach(Item::endAuction); //This line sets all items to inactive
 
-        List<Item> activeAuctions = auctionController.getActiveAuction();
+        List<Item> activeAuctions = auctionController.getActiveAuctions();
         assertTrue(activeAuctions.isEmpty(), "getActiveAuctions should return an empty list if no items are active");
     }
 

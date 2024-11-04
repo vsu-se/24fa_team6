@@ -6,6 +6,9 @@ import java.awt.event.ActionEvent;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class AuctionSystemGUI extends JFrame {
     private CategoryController categoryController;
@@ -13,6 +16,7 @@ public class AuctionSystemGUI extends JFrame {
     private BuyerPremiumController buyerPremiumController;
     private ItemController itemController;
     private AuctionController auctionController;
+    private String currentUser = "";
 
     public AuctionSystemGUI() {
         // Initialize controllers
@@ -22,7 +26,12 @@ public class AuctionSystemGUI extends JFrame {
         itemController = new ItemController(new ArrayList<>());
         auctionController = new AuctionController(itemController.getItems());
 
+        // Scheduled service to check on auctions.
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleAtFixedRate(() -> auctionController.checkAndEndAuctions(), 0, 10, TimeUnit.SECONDS); // This would be changed to a higher interval; 5-15 minutes
+
         // Set up the main frame
+
         setTitle("Auction System");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -40,7 +49,7 @@ public class AuctionSystemGUI extends JFrame {
 
     private JPanel createAdminPanel() {
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(3, 1));
+        panel.setLayout(new GridLayout(4, 1));
 
         // Category Management
         JPanel categoryPanel = new JPanel();
@@ -101,9 +110,26 @@ public class AuctionSystemGUI extends JFrame {
         buyerPremiumPanel.add(premiumField);
         buyerPremiumPanel.add(setPremiumButton);
 
+        // Concluded Auctions
+        JPanel concludedAuctionsPanel = new JPanel(new BorderLayout());
+        concludedAuctionsPanel.setBorder(BorderFactory.createTitledBorder("Concluded Auctions"));
+        JTextArea concludedAuctionsTextArea = new JTextArea();
+        concludedAuctionsTextArea.setEditable(false);
+        JButton refreshConcludedAuctionsButton = new JButton("Refresh Concluded Auctions");
+        refreshConcludedAuctionsButton.addActionListener(e -> {
+            List<Item> concludedAuctions = auctionController.getConcludedAuctions();
+            concludedAuctionsTextArea.setText("");
+            for (Item item : concludedAuctions) {
+                concludedAuctionsTextArea.append("Item: " + item.getName() + ", End Date: " + item.getEndDate() + ", Price: $" + item.getHighestBid() + ", High Bidder: " + item.getCurrentBidder() + "\n");
+            }
+        });
+        concludedAuctionsPanel.add(new JScrollPane(concludedAuctionsTextArea), BorderLayout.CENTER);
+        concludedAuctionsPanel.add(refreshConcludedAuctionsButton, BorderLayout.SOUTH);
+
         panel.add(categoryPanel);
         panel.add(commissionPanel);
         panel.add(buyerPremiumPanel);
+        panel.add(concludedAuctionsPanel);
 
         return panel;
     }
@@ -115,7 +141,7 @@ public class AuctionSystemGUI extends JFrame {
         // Item Listing Panel
         JPanel listItemPanel = new JPanel();
         listItemPanel.setBorder(BorderFactory.createTitledBorder("List Item for Auction"));
-        JTextField itemNameField = new JTextField(10);
+        JTextField itemNameField = new JTextField(30);
         JTextField startingPriceField = new JTextField(10);
         JTextField endDateField = new JTextField(10); // Format: yyyy-mm-dd
         JTextField shippingCostField = new JTextField(10);
@@ -176,10 +202,15 @@ public class AuctionSystemGUI extends JFrame {
         activeAuctionsTextArea.setEditable(false);
         JButton refreshAuctionsButton = new JButton("Show Active Auctions");
         refreshAuctionsButton.addActionListener(e -> {
-            List<Item> activeAuctions = auctionController.getActiveAuction();
+            auctionController.checkAndEndAuctions();
+            List<Item> activeAuctions = auctionController.getActiveAuctions();
             activeAuctionsTextArea.setText("");
             for (Item item : activeAuctions) {
-                activeAuctionsTextArea.append("Item: " + item.getName() + ", Current Bid: $" + item.getHighestBid() + ", End Date: " + item.getEndDate() + "\n");
+                if (item.hasBidFromUser(currentUser)) {
+                    activeAuctionsTextArea.append("** Item: " + item.getName() + ", Current Bid: $" + item.getHighestBid() + ", End Date: " + item.getEndDate() + ", High Bidder: " + item.getCurrentBidder() + ", Time Remaining: " + item.getTimeRemaining().getDays() + " days" + "\n");
+                } else {
+                    activeAuctionsTextArea.append("    Item: " + item.getName() + ", Current Bid: $" + item.getHighestBid() + ", End Date: " + item.getEndDate() + ", High Bidder: " + item.getCurrentBidder() + "\n");
+                }
             }
         });
 
@@ -194,12 +225,19 @@ public class AuctionSystemGUI extends JFrame {
             try {
                 String itemName = bidItemNameField.getText();
                 String bidderName = bidderNameField.getText();
-                double bidAmount = Double.parseDouble(bidAmountField.getText());
-                boolean success = auctionController.placeBid(itemName, new Bid(bidderName, bidAmount));
-                if (success) {
-                    JOptionPane.showMessageDialog(this, "Bid placed on " + itemName);
-                } else {
-                    JOptionPane.showMessageDialog(this, "Bid failed. Either auction is closed or bid amount is too low.");
+                currentUser = bidderName;
+
+                if (!auctionController.itemExists(itemName)) {
+                    JOptionPane.showMessageDialog(this, "Item '" + itemName + "' not found.");
+                }
+                else {
+                    double bidAmount = Double.parseDouble(bidAmountField.getText());
+                    boolean success = auctionController.placeBid(itemName, new Bid(bidderName, bidAmount));
+                    if (success) {
+                        JOptionPane.showMessageDialog(this, "Bid placed on " + itemName);
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Bid failed. Either auction is closed or bid amount is too low.");
+                    }
                 }
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Please enter valid bid details.");
