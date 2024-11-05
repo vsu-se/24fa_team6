@@ -2,7 +2,9 @@ package CS4321;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 public class Item {
     private String name;
@@ -70,9 +72,16 @@ public class Item {
         this.isActive = active;
     }
 
-    public Period getTimeRemaining() {
-        LocalDate currentDate = LocalDate.now();
+    public Period getTimeRemaining(LocalDate currentDate) {
         return Period.between(currentDate, endDate);
+    }
+
+    public List<Bid> getBidHistory() {
+        return new ArrayList<>(bids); // Assuming `bids` is a list of Bid objects
+    }
+
+    public double getSellerCommission(double commissionRate) {
+        return getHighestBid() * (commissionRate / 100);
     }
 
     public boolean placeBid(Bid bid) {
