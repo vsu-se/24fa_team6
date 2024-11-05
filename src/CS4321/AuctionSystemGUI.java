@@ -1,8 +1,19 @@
 package CS4321;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,11 +31,7 @@ public class AuctionSystemGUI extends JFrame {
 
     public AuctionSystemGUI() {
         // Initialize controllers
-        categoryController = new CategoryController(new ArrayList<>());
-        commissionController = new CommissionController(new Commission(0.0));
-        buyerPremiumController = new BuyerPremiumController(new BuyerPremium(0.0));
-        itemController = new ItemController(new ArrayList<>());
-        auctionController = new AuctionController(itemController.getItems());
+        loadData();
 
         // Scheduled service to check on auctions.
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -45,6 +52,13 @@ public class AuctionSystemGUI extends JFrame {
         tabbedPane.add("Auction Viewer", createAuctionViewerPanel());
 
         add(tabbedPane, BorderLayout.CENTER);
+
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                saveData();
+            }
+        });
     }
 
     private JPanel createAdminPanel() {
@@ -363,6 +377,63 @@ public class AuctionSystemGUI extends JFrame {
         panel.add(bidHistoryPanel);
 
         return panel;
+    }
+
+    private void saveData() {
+        try (Writer writer = new FileWriter("system-data.json")) {
+            Gson gson = new GsonBuilder()
+                    .registerTypeAdapter(LocalDate.class, new LocalDateTypeAdapter())
+                    .create();
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.add("categories", gson.toJsonTree(categoryController.getCategories()));
+            jsonObject.add("items", gson.toJsonTree(itemController.getItems()));
+            jsonObject.add("commission", gson.toJsonTree(commissionController.getSellerCommission()));
+            jsonObject.add("buyerPremium", gson.toJsonTree(buyerPremiumController.getBuyerPremium()));
+            gson.toJson(jsonObject, writer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadData() {
+        try (Reader reader = new FileReader("system-data.json")) {
+            Gson gson = new GsonBuilder()
+                    .registerTypeAdapter(LocalDate.class, new LocalDateTypeAdapter())
+                    .create();
+            JsonObject jsonObject = gson.fromJson(reader, JsonObject.class);
+
+            java.lang.reflect.Type categoryListType = new TypeToken<ArrayList<Category>>() {}.getType();
+            java.lang.reflect.Type itemListType = new TypeToken<ArrayList<Item>>() {}.getType();
+            java.lang.reflect.Type commissionType = new TypeToken<Commission>() {}.getType();
+            java.lang.reflect.Type buyerPremiumType = new TypeToken<BuyerPremium>() {}.getType();
+
+            List<Category> categories = gson.fromJson(jsonObject.get("categories"), categoryListType);
+            List<Item> items = gson.fromJson(jsonObject.get("items"), itemListType);
+            Commission commission = gson.fromJson(jsonObject.get("commission"), commissionType);
+            BuyerPremium buyerPremium = gson.fromJson(jsonObject.get("buyerPremium"), buyerPremiumType);
+
+            System.out.println("Deserialized Categories: " + categories);
+            System.out.println("Deserialized Items: " + items);
+            System.out.println("Deserialized Commission: " + commission);
+            System.out.println("Deserialized BuyerPremium: " + buyerPremium);
+
+            categoryController = new CategoryController(categories);
+            commissionController = new CommissionController(commission);
+            buyerPremiumController = new BuyerPremiumController(buyerPremium);
+            itemController = new ItemController(items);
+            auctionController = new AuctionController(itemController.getItems());
+            System.out.println("Active Auctions (" + itemController.getItems().size() + "):");
+            for (Item item : itemController.getItems()) {
+                System.out.println("Active Auction: " + item.getName() + ", End Date: " + item.getEndDate() + ", Time Remaining: " + item.getTimeRemaining(auctionController.getCurrentDate()).getDays() + " days");
+            }
+        } catch (IOException | JsonSyntaxException e) {
+            System.out.println(e);
+            categoryController = new CategoryController(new ArrayList<>());
+            commissionController = new CommissionController(new Commission(0.0));
+            buyerPremiumController = new BuyerPremiumController(new BuyerPremium(0.0));
+            itemController = new ItemController(new ArrayList<>());
+            auctionController = new AuctionController(itemController.getItems());
+        }
     }
 
     public static void main(String[] args) {
