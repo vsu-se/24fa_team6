@@ -74,6 +74,23 @@ class AuctionControllerTest {
         }
     }
 
+    // User Story 14
+    @DisplayName("Test setTimeSetting to a specific date for testing")
+    @Test
+    void testSetTimeSetting() {
+        auctionController.setTimeSetting("2024-11-05");
+        assertEquals(LocalDate.of(2024, 11, 5), auctionController.getCurrentDate(),
+                "System date should match the set date '2024-11-05'.");
+    }
 
+    // User Story 15
+    @DisplayName("Test resume real-time mode after setting a custom date")
+    @Test
+    void testResumeRealTime() {
+        auctionController.setTimeSetting("2024-11-05");
+        auctionController.setTimeSetting("live");
+        assertEquals(LocalDate.now(), auctionController.getCurrentDate(),
+                "System date should resume to the current real-time date.");
+    }
 
 }
