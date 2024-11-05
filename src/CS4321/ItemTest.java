@@ -160,4 +160,37 @@ class ItemTest {
         assertEquals(120.0, item.getHighestBid(), "getHighestBid should return the highest bid amount when bids are placed");
     }
 
+    //user story 8
+    @DisplayName("Test getCurrentBid returns my bid when I have placed a bid")
+    @Test
+    void testGetCurrentBid_returnsMyBid() {
+        Item item = new Item("Test Item", 100.0, LocalDate.of(2024, 12, 31), 5.0);
+        Bid myBid = new Bid("Alice", 120.0);
+        item.placeBid(myBid);
+        assertEquals(myBid, item.getCurrentBid(), "getCurrentBid should return my bid when I have placed a bid");
+    }
+    //user story 13
+    @DisplayName("Test getBidHistory returns correct bid history")
+    @Test
+    void testGetBidHistory() {
+        Item item = new Item("Test Item", 100.0, LocalDate.of(2024, 12, 31), 5.0);
+        Bid bid1 = new Bid("Alice", 120.0);
+        Bid bid2 = new Bid("Bob", 150.0);
+        item.placeBid(bid1);
+        item.placeBid(bid2);
+        assertEquals(2, item.getBidHistory().size(), "Bid history should contain all placed bids");
+        assertEquals(bid2, item.getBidHistory().get(0), "Latest bid should be the first in bid history");
+        assertEquals(bid1, item.getBidHistory().get(1), "First bid should be last in bid history");
+    }
+
+    @DisplayName("Test getSellerCommission calculates correctly based on commission rate")
+    @Test
+    void testGetSellerCommission() {
+        Item item = new Item("Test Item", 100.0, LocalDate.of(2024, 12, 31), 5.0);
+        item.placeBid(new Bid("Alice", 150.0));
+        double commissionRate = 10.0;
+        double expectedCommission = 15.0;
+        assertEquals(expectedCommission, item.getSellerCommission(commissionRate), "Seller commission should be calculated based on highest bid");
+    }
 }
+

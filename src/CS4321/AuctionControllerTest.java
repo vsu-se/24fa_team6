@@ -52,4 +52,46 @@ class AuctionControllerTest {
         assertTrue(activeAuctions.isEmpty(), "getActiveAuctions should return an empty list if no items are active");
     }
 
+    // User Story 9
+    @DisplayName("Test checkAndEndAuctions correctly ends auctions with past end dates")
+    @Test
+    void testCheckAndEndAuctions() {
+        // Simulate that today's date is after some items' end dates
+        auctionController.checkAndEndAuctions();
+        assertFalse(items.get(2).isActive(), "Item 3's auction should be concluded as its end date has passed");
+        assertTrue(items.get(0).isActive(), "Item 1's auction should still be active as its end date is in the future");
+    }
+
+    // User Story 10
+    @DisplayName("Test getConcludedAuctions retrieves concluded auctions in reverse order")
+    @Test
+    void testGetConcludedAuctions() {
+        auctionController.checkAndEndAuctions(); //This line Ensure auctions with past end dates are concluded
+        List<Item> concludedAuctions = auctionController.getConcludedAuctions();
+        List<Item> expectedItems = List.of(items.get(3), items.get(2)); // Items set as inactive or past end date
+        assertEquals(expectedItems.size(), concludedAuctions.size(), "Concluded auctions should match expected count");
+        for (int i = 0; i < expectedItems.size(); i++) {
+            assertEquals(expectedItems.get(i), concludedAuctions.get(i), "Concluded auctions should be in reverse end date order");
+        }
+    }
+
+    // User Story 14
+    @DisplayName("Test setTimeSetting to a specific date for testing")
+    @Test
+    void testSetTimeSetting() {
+        auctionController.setTimeSetting("2024-11-05");
+        assertEquals(LocalDate.of(2024, 11, 5), auctionController.getCurrentDate(),
+                "System date should match the set date '2024-11-05'.");
+    }
+
+    // User Story 15
+    @DisplayName("Test resume real-time mode after setting a custom date")
+    @Test
+    void testResumeRealTime() {
+        auctionController.setTimeSetting("2024-11-05");
+        auctionController.setTimeSetting("live");
+        assertEquals(LocalDate.now(), auctionController.getCurrentDate(),
+                "System date should resume to the current real-time date.");
+    }
+
 }
