@@ -49,7 +49,7 @@ public class AuctionSystemGUI extends JFrame {
 
     private JPanel createAdminPanel() {
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(4, 1));
+        panel.setLayout(new GridLayout(6, 1));
 
         // Category Management
         JPanel categoryPanel = new JPanel();
@@ -126,15 +126,61 @@ public class AuctionSystemGUI extends JFrame {
         concludedAuctionsPanel.add(new JScrollPane(concludedAuctionsTextArea), BorderLayout.CENTER);
         concludedAuctionsPanel.add(refreshConcludedAuctionsButton, BorderLayout.SOUTH);
 
+        // Bid History
+        JPanel bidHistoryPanel = new JPanel();
+        bidHistoryPanel.setBorder(BorderFactory.createTitledBorder("View Bid History"));
+        JTextField bidHistoryItemNameField = new JTextField(20);
+        JButton viewBidHistoryButton = new JButton("View Bid History");
+        viewBidHistoryButton.addActionListener((ActionEvent e) -> {
+            String itemName = bidHistoryItemNameField.getText().trim();
+            if (!itemName.isEmpty()) {
+                if (auctionController.itemExists(itemName)) {
+                    List<Bid> bidHistory = auctionController.getBidHistory(itemName);
+                    StringBuilder bidHistoryText = new StringBuilder();
+                    for (Bid bid : bidHistory) {
+                        bidHistoryText.append("Bidder: ").append(bid.getBidderName()).append(", Amount: $").append(bid.getAmount()).append("\n");
+                    }
+                    JOptionPane.showMessageDialog(this, bidHistoryText.toString(), "Bid History for " + itemName, JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Item '" + itemName + "' not found.");
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Item name cannot be empty.");
+            }
+        });
+        bidHistoryPanel.add(new JLabel("Item Name:"));
+        bidHistoryPanel.add(bidHistoryItemNameField);
+        bidHistoryPanel.add(viewBidHistoryButton);
+
+        // Set Current Date
+        JPanel currentDatePanel = new JPanel();
+        currentDatePanel.setBorder(BorderFactory.createTitledBorder("Set Current Date"));
+        JTextField currentDateField = new JTextField(10); // Format: yyyy-mm-dd
+        JButton setCurrentDateButton = new JButton("Set Current Date");
+        setCurrentDateButton.addActionListener((ActionEvent e) -> {
+            try {
+                String currentDate = currentDateField.getText();
+                auctionController.setTimeSetting(currentDate);
+                JOptionPane.showMessageDialog(this, "Current date set to: " + currentDate);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Please enter a valid date in the format yyyy-mm-dd.");
+            }
+        });
+        currentDatePanel.add(new JLabel("Current Date (yyyy-mm-dd) or 'live':"));
+        currentDatePanel.add(currentDateField);
+        currentDatePanel.add(setCurrentDateButton);
+
         panel.add(categoryPanel);
         panel.add(commissionPanel);
         panel.add(buyerPremiumPanel);
         panel.add(concludedAuctionsPanel);
+        panel.add(bidHistoryPanel);
+        panel.add(currentDatePanel);
 
         return panel;
     }
 
-    private JPanel createSellerPanel() {
+    private JScrollPane createSellerPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
@@ -206,13 +252,17 @@ public class AuctionSystemGUI extends JFrame {
         panel.add(myAuctionsPanel, BorderLayout.CENTER);
         panel.add(reportPanel, BorderLayout.SOUTH);
 
-        return panel;
+        JScrollPane scrollPane = new JScrollPane(panel);
+        return scrollPane;
     }
 
     private JPanel createAuctionViewerPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(4, 1));
 
         // Active Auctions Panel
+        JPanel activeAuctionsPanel = new JPanel(new BorderLayout());
+        activeAuctionsPanel.setBorder(BorderFactory.createTitledBorder("Active Auctions"));
         JTextArea activeAuctionsTextArea = new JTextArea();
         activeAuctionsTextArea.setEditable(false);
         JButton refreshAuctionsButton = new JButton("Show Active Auctions");
@@ -222,12 +272,14 @@ public class AuctionSystemGUI extends JFrame {
             activeAuctionsTextArea.setText("");
             for (Item item : activeAuctions) {
                 if (item.hasBidFromUser(currentUser)) {
-                    activeAuctionsTextArea.append("** Item: " + item.getName() + ", Current Bid: $" + item.getHighestBid() + ", End Date: " + item.getEndDate() + ", High Bidder: " + item.getCurrentBidder() + ", Time Remaining: " + item.getTimeRemaining().getDays() + " days" + "\n");
+                    activeAuctionsTextArea.append("** Item: " + item.getName() + ", Current Bid: $" + item.getHighestBid() + ", End Date: " + item.getEndDate() + ", High Bidder: " + item.getCurrentBidder() + ", Time Remaining: " + item.getTimeRemaining(auctionController.getCurrentDate()).getDays() + " days" + "\n");
                 } else {
                     activeAuctionsTextArea.append("    Item: " + item.getName() + ", Current Bid: $" + item.getHighestBid() + ", End Date: " + item.getEndDate() + ", High Bidder: " + item.getCurrentBidder() + "\n");
                 }
             }
         });
+        activeAuctionsPanel.add(new JScrollPane(activeAuctionsTextArea), BorderLayout.CENTER);
+        activeAuctionsPanel.add(refreshAuctionsButton, BorderLayout.SOUTH);
 
         // Bidding Panel
         JPanel bidPanel = new JPanel();
@@ -244,8 +296,7 @@ public class AuctionSystemGUI extends JFrame {
 
                 if (!auctionController.itemExists(itemName)) {
                     JOptionPane.showMessageDialog(this, "Item '" + itemName + "' not found.");
-                }
-                else {
+                } else {
                     double bidAmount = Double.parseDouble(bidAmountField.getText());
                     boolean success = auctionController.placeBid(itemName, new Bid(bidderName, bidAmount));
                     if (success) {
@@ -280,10 +331,36 @@ public class AuctionSystemGUI extends JFrame {
         reportPanel.add(new JScrollPane(reportTextArea), BorderLayout.CENTER);
         reportPanel.add(generateReportButton, BorderLayout.SOUTH);
 
-        panel.add(new JScrollPane(activeAuctionsTextArea), BorderLayout.CENTER);
-        panel.add(refreshAuctionsButton, BorderLayout.NORTH);
-        panel.add(bidPanel, BorderLayout.SOUTH);
-        panel.add(reportPanel, BorderLayout.EAST);
+        // Bid History Panel
+        JPanel bidHistoryPanel = new JPanel();
+        bidHistoryPanel.setBorder(BorderFactory.createTitledBorder("View Bid History"));
+        JTextField bidHistoryItemNameField = new JTextField(20);
+        JButton viewBidHistoryButton = new JButton("View Bid History");
+        viewBidHistoryButton.addActionListener((ActionEvent e) -> {
+            String itemName = bidHistoryItemNameField.getText().trim();
+            if (!itemName.isEmpty()) {
+                if (auctionController.itemExists(itemName)) {
+                    List<Bid> bidHistory = auctionController.getBidHistory(itemName);
+                    StringBuilder bidHistoryText = new StringBuilder();
+                    for (Bid bid : bidHistory) {
+                        bidHistoryText.append("Bidder: ").append(bid.getBidderName()).append(", Amount: $").append(bid.getAmount()).append("\n");
+                    }
+                    JOptionPane.showMessageDialog(this, bidHistoryText.toString(), "Bid History for " + itemName, JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Item '" + itemName + "' not found.");
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Item name cannot be empty.");
+            }
+        });
+        bidHistoryPanel.add(new JLabel("Item Name:"));
+        bidHistoryPanel.add(bidHistoryItemNameField);
+        bidHistoryPanel.add(viewBidHistoryButton);
+
+        panel.add(activeAuctionsPanel);
+        panel.add(bidPanel);
+        panel.add(reportPanel);
+        panel.add(bidHistoryPanel);
 
         return panel;
     }
