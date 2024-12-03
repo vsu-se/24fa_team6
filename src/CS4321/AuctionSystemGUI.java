@@ -1,4 +1,4 @@
-package CS4321;
+package src.CS4321;
 
 import javax.swing.*;
 import java.awt.*;

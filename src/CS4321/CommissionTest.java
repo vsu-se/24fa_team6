@@ -1,4 +1,4 @@
-package CS4321;
+package src.CS4321;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
