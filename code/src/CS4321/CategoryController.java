@@ -17,4 +17,8 @@ public class CategoryController {
     public List<Category> getCategories(){
         return categories;
     }
+
+//    public void clearCategories() {
+//        categories.clear();
+//    }
 }

@@ -14,6 +14,8 @@ public class Item {
     private boolean isActive;
     private String category;
     private LinkedList<Bid> bids;
+//    private double highestBid;
+//    private String currentBidder;
 
     public Item(String name, double startingPrice, LocalDate endDate, double shippingCost) {
         this.name = name;
@@ -22,6 +24,7 @@ public class Item {
         this.shippingCost = shippingCost;
         this.isActive = true;
         this.bids = new LinkedList<>();
+//        this.highestBid = startingPrice;
     }
 
     public String getName() {
@@ -100,4 +103,12 @@ public class Item {
         }
         return false;
     }
+
+//    public void setHighestBid(double bid) {
+//        this.highestBid = bid;
+//    }
+//
+//    public void setCurrentBidder(String bidder) {
+//        this.currentBidder = bidder;
+//    }
 }

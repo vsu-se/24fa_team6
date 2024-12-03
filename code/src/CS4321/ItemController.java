@@ -35,4 +35,15 @@ public class ItemController {
         }
         return false; // If the item is not found or bid placement fails
     }
+
+//    public void clearItems() {
+//        items.clear();
+//    }
+//
+//    public Item getItemByName(String name) {
+//        return items.stream()
+//                .filter(item -> item.getName().equalsIgnoreCase(name))
+//                .findFirst()
+//                .orElse(null);
+//    }
 }
