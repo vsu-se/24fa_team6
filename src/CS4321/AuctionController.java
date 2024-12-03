@@ -89,11 +89,4 @@ public class AuctionController {
         return new ArrayList<>();
     }
 
-//    public void clearConcludedAuctions() {
-//        items.clear();
-//    }
-//
-//    public void addConcludedAuction(Item item) {
-//        items.add(item);
-//    }
 }

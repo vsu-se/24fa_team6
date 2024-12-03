@@ -55,7 +55,6 @@ public class AuctionReport {
         return report.toString();
     }
 
-
     public String generateBuyerReport(String currentUser) {
         auctionController.checkAndEndAuctions(); // Ensure auctions are checked and ended
         List<Item> purchasedItems = auctionController.getConcludedAuctions().stream()
