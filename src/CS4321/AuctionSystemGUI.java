@@ -25,6 +25,8 @@ public class AuctionSystemGUI extends JFrame {
     private String currentUser = "";
     private JButton saveButton;
     private JButton restoreButton;
+    private UserSystem userSystem;
+    private String currentUsers;
 
     public AuctionSystemGUI() {
         // Initialize controllers
@@ -33,6 +35,8 @@ public class AuctionSystemGUI extends JFrame {
         buyerPremiumController = new BuyerPremiumController(new BuyerPremium(0.0));
         itemController = new ItemController(new ArrayList<>());
         auctionController = new AuctionController(itemController.getItems());
+        userSystem = new UserSystem();
+        currentUsers = null;
 
         // Scheduled service to check on auctions.
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -42,8 +46,18 @@ public class AuctionSystemGUI extends JFrame {
 
         setTitle("Auction System");
         setSize(800, 600);
+        setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
+        setLayout(new CardLayout());
+
+        JPanel loginPanel = createLoginPanel();
+        JPanel mainPanel = createMainPanel();
+
+        add(loginPanel, "LoginPanel");
+        add(mainPanel, "MainPanel");
+
+        CardLayout c1 = (CardLayout) getContentPane().getLayout();
+        c1.show(getContentPane(), "LoginPanel");
 
         JTabbedPane tabbedPane = new JTabbedPane();
 
@@ -493,6 +507,98 @@ public class AuctionSystemGUI extends JFrame {
         panel.add(bidHistoryPanel);
 
         return panel;
+    }
+
+    private JPanel createLoginPanel() {
+        JPanel loginPanel = new JPanel();
+        loginPanel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+        JLabel usernameLabel = new JLabel("Username:");
+        JTextField usernameField = new JTextField(20);
+        JLabel passwordLabel = new JLabel("Password:");
+        JPasswordField passwordField = new JPasswordField(20);
+        JButton loginButton = new JButton("Login");
+        JButton registerButton = new JButton("Register");
+
+        JTextArea messageArea = new JTextArea(3, 30);
+        messageArea.setEditable(false);
+        messageArea.setWrapStyleWord(true);
+        messageArea.setLineWrap(true);
+
+        loginButton.addActionListener((ActionEvent e) -> {
+            String username = usernameField.getText();
+            String password = new String(passwordField.getPassword());
+            String loginResult = userSystem.login(username, password);
+
+            if (loginResult.equals("Login successful")) {
+                currentUser = username;
+                JOptionPane.showMessageDialog(this, "Welcome, " + username + "!");
+                CardLayout cl = (CardLayout) getContentPane().getLayout();
+                cl.show(getContentPane(), "MainPanel");
+            } else {
+                messageArea.setText(loginResult);
+            }
+        });
+
+        registerButton.addActionListener((ActionEvent e) -> {
+            String username = usernameField.getText();
+            String password = new String(passwordField.getPassword());
+            String registrationResult = userSystem.register(username, password);
+            messageArea.setText(registrationResult);
+        });
+
+        // Add components to the panel
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        loginPanel.add(usernameLabel, gbc);
+        gbc.gridx = 1;
+        loginPanel.add(usernameField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        loginPanel.add(passwordLabel, gbc);
+        gbc.gridx = 1;
+        loginPanel.add(passwordField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        loginPanel.add(loginButton, gbc);
+        gbc.gridx = 1;
+        loginPanel.add(registerButton, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        loginPanel.add(messageArea, gbc);
+
+        return loginPanel;
+    }
+
+    private JPanel createMainPanel() {
+        JTabbedPane tabbedPane = new JTabbedPane();
+
+        // Add your existing panels to the tabbedPane
+        tabbedPane.add("Admin Panel", createAdminPanel());
+        tabbedPane.add("Seller Panel", createSellerPanel());
+        tabbedPane.add("Auction Viewer", createAuctionViewerPanel());
+        tabbedPane.add("Save and Restore", createSaveAndRestoreData());
+
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(tabbedPane, BorderLayout.CENTER);
+
+        // Add Logout Button
+        JButton logoutButton = new JButton("Logout");
+        logoutButton.addActionListener(e -> {
+            currentUser = null;
+            JOptionPane.showMessageDialog(this, "Logged out successfully!");
+            CardLayout cl = (CardLayout) getContentPane().getLayout();
+            cl.show(getContentPane(), "LoginPanel");
+        });
+
+        mainPanel.add(logoutButton, BorderLayout.SOUTH);
+        return mainPanel;
     }
 
     public static void main(String[] args) {
