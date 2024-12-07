@@ -1,8 +1,14 @@
-package CS4321;
+package src.CS4321;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +23,10 @@ public class AuctionSystemGUI extends JFrame {
     private ItemController itemController;
     private AuctionController auctionController;
     private String currentUser = "";
+    private JButton saveButton;
+    private JButton restoreButton;
+    private UserSystem userSystem;
+    private String currentUsers;
 
     public AuctionSystemGUI() {
         // Initialize controllers
@@ -25,6 +35,8 @@ public class AuctionSystemGUI extends JFrame {
         buyerPremiumController = new BuyerPremiumController(new BuyerPremium(0.0));
         itemController = new ItemController(new ArrayList<>());
         auctionController = new AuctionController(itemController.getItems());
+        userSystem = new UserSystem();
+        currentUsers = null;
 
         // Scheduled service to check on auctions.
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -34,8 +46,18 @@ public class AuctionSystemGUI extends JFrame {
 
         setTitle("Auction System");
         setSize(800, 600);
+        setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
+        setLayout(new CardLayout());
+
+        JPanel loginPanel = createLoginPanel();
+        JPanel mainPanel = createMainPanel();
+
+        add(loginPanel, "LoginPanel");
+        add(mainPanel, "MainPanel");
+
+        CardLayout c1 = (CardLayout) getContentPane().getLayout();
+        c1.show(getContentPane(), "LoginPanel");
 
         JTabbedPane tabbedPane = new JTabbedPane();
 
@@ -43,8 +65,130 @@ public class AuctionSystemGUI extends JFrame {
         tabbedPane.add("Admin Panel", createAdminPanel());
         tabbedPane.add("Seller Panel", createSellerPanel());
         tabbedPane.add("Auction Viewer", createAuctionViewerPanel());
+        tabbedPane.add("Save and Restore", createSaveAndRestoreData());
 
         add(tabbedPane, BorderLayout.CENTER);
+    }
+
+    private void saveAllData() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Select a file to save all data");
+        int result = fileChooser.showSaveDialog(this);
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            try (FileWriter writer = new FileWriter(file)) {
+                StringBuilder dataBuilder = new StringBuilder();
+                dataBuilder.append("Categories:\n");
+                for (Category category : categoryController.getCategories()) {
+                    dataBuilder.append(category.getName()).append("\n");
+                }
+
+                dataBuilder.append("\nSeller Commission:\n")
+                        .append(commissionController.getSellerCommission()).append("\n");
+
+                dataBuilder.append("\nBuyer Premium:\n")
+                        .append(buyerPremiumController.getBuyerPremium()).append("\n");
+
+                dataBuilder.append("\nItems:\n");
+                for (Item item : itemController.getItems()) {
+                    dataBuilder.append("Name: ").append(item.getName())
+                            .append(", Price: ").append(item.getStartingPrice())
+                            .append(", End Date: ").append(item.getEndDate())
+                            .append(", Shipping: ").append(item.getShippingCost())
+                            .append(", Active: ").append(item.isActive())
+                            .append("\n");
+                }
+
+                dataBuilder.append("\nConcluded Auctions:\n");
+                for (Item auction : auctionController.getConcludedAuctions()) {
+                    dataBuilder.append("Name: ").append(auction.getName())
+                            .append(", Winning Bid: ").append(auction.getHighestBid())
+                            .append(", Winner: ").append(auction.getCurrentBidder())
+                            .append("\n");
+                }
+                writer.write(dataBuilder.toString());
+                JOptionPane.showMessageDialog(this, "All data saved successfully to " + file.getAbsolutePath());
+            }
+            catch (IOException e) {
+                JOptionPane.showMessageDialog(this, "Error saving data: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+//    private void restoreAllData() {
+//        JFileChooser fileChooser = new JFileChooser();
+//        fileChooser.setDialogTitle("Select a file to restore all data");
+//        int result = fileChooser.showOpenDialog(this);
+//
+//        if (result == JFileChooser.APPROVE_OPTION) {
+//            File file = fileChooser.getSelectedFile();
+//
+//            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+//                String line;
+//                while ((line = reader.readLine()) != null) {
+//                    if (line.startsWith("Categories:")) {
+//                        categoryController.clearCategories();
+//                        while ((line = reader.readLine()) != null && !line.isEmpty()) {
+//                            categoryController.addCategory(line.trim());
+//                        }
+//                    } else if (line.startsWith("Seller Commission:")) {
+//                        commissionController.setSellerCommission(Double.parseDouble(reader.readLine().trim()));
+//                    } else if (line.startsWith("Buyer Premium:")) {
+//                        buyerPremiumController.setBuyerPremium(Double.parseDouble(reader.readLine().trim()));
+//                    } else if (line.startsWith("Items:")) {
+//                        itemController.clearItems();
+//                        while ((line = reader.readLine()) != null && !line.isEmpty()) {
+//                            String[] itemData = line.split(", ");
+//                            String name = itemData[0].split(": ")[1];
+//                            double price = Double.parseDouble(itemData[1].split(": ")[1]);
+//                            LocalDate endDate = LocalDate.parse(itemData[2].split(": ")[1]);
+//                            double shipping = Double.parseDouble(itemData[3].split(": ")[1]);
+//                            boolean active = Boolean.parseBoolean(itemData[4].split(": ")[1]);
+//
+//                            itemController.listItem(name, price, endDate, shipping);
+//                            Item restoredItem = itemController.getItemByName(name);
+//                            if (restoredItem != null) {
+//                                restoredItem.setActive(active);
+//                            }
+//                        }
+//                    } else if (line.startsWith("Concluded Auctions:")) {
+//                        auctionController.clearConcludedAuctions();
+//                        while ((line = reader.readLine()) != null && !line.isEmpty()) {
+//                            String[] auctionData = line.split(", ");
+//                            String itemName = auctionData[0].split(": ")[1];
+//                            double winningBid = Double.parseDouble(auctionData[1].split(": ")[1]);
+//                            String winner = auctionData[2].split(": ")[1];
+//
+//                            Item item = itemController.getItemByName(itemName);
+//                            if (item != null) {
+//                                item.setHighestBid(winningBid);
+//                                item.setCurrentBidder(winner);
+//                                item.setActive(false);
+//                                auctionController.addConcludedAuction(item);
+//                            }
+//                        }
+//                    }
+//                }
+//                JOptionPane.showMessageDialog(this, "All data restored successfully from " + file.getAbsolutePath());
+//            } catch (Exception e) {
+//                JOptionPane.showMessageDialog(this, "Error restoring data: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+//            }
+//        }
+//    }
+
+
+
+    private JPanel createSaveAndRestoreData() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(2, 1));
+        saveButton = new JButton("Save All Data");
+        restoreButton = new JButton("Restore All Data");
+        panel.add(saveButton);
+        panel.add(restoreButton);
+        saveButton.addActionListener(e -> saveAllData());
+//      restoreButton.addActionListener(e -> restoreAllData());
+        return panel;
     }
 
     private JPanel createAdminPanel() {
@@ -363,6 +507,98 @@ public class AuctionSystemGUI extends JFrame {
         panel.add(bidHistoryPanel);
 
         return panel;
+    }
+
+    private JPanel createLoginPanel() {
+        JPanel loginPanel = new JPanel();
+        loginPanel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+        JLabel usernameLabel = new JLabel("Username:");
+        JTextField usernameField = new JTextField(20);
+        JLabel passwordLabel = new JLabel("Password:");
+        JPasswordField passwordField = new JPasswordField(20);
+        JButton loginButton = new JButton("Login");
+        JButton registerButton = new JButton("Register");
+
+        JTextArea messageArea = new JTextArea(3, 30);
+        messageArea.setEditable(false);
+        messageArea.setWrapStyleWord(true);
+        messageArea.setLineWrap(true);
+
+        loginButton.addActionListener((ActionEvent e) -> {
+            String username = usernameField.getText();
+            String password = new String(passwordField.getPassword());
+            String loginResult = userSystem.login(username, password);
+
+            if (loginResult.equals("Login successful")) {
+                currentUser = username;
+                JOptionPane.showMessageDialog(this, "Welcome, " + username + "!");
+                CardLayout cl = (CardLayout) getContentPane().getLayout();
+                cl.show(getContentPane(), "MainPanel");
+            } else {
+                messageArea.setText(loginResult);
+            }
+        });
+
+        registerButton.addActionListener((ActionEvent e) -> {
+            String username = usernameField.getText();
+            String password = new String(passwordField.getPassword());
+            String registrationResult = userSystem.register(username, password);
+            messageArea.setText(registrationResult);
+        });
+
+        // Add components to the panel
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        loginPanel.add(usernameLabel, gbc);
+        gbc.gridx = 1;
+        loginPanel.add(usernameField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        loginPanel.add(passwordLabel, gbc);
+        gbc.gridx = 1;
+        loginPanel.add(passwordField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        loginPanel.add(loginButton, gbc);
+        gbc.gridx = 1;
+        loginPanel.add(registerButton, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        loginPanel.add(messageArea, gbc);
+
+        return loginPanel;
+    }
+
+    private JPanel createMainPanel() {
+        JTabbedPane tabbedPane = new JTabbedPane();
+
+        // Add your existing panels to the tabbedPane
+        tabbedPane.add("Admin Panel", createAdminPanel());
+        tabbedPane.add("Seller Panel", createSellerPanel());
+        tabbedPane.add("Auction Viewer", createAuctionViewerPanel());
+        tabbedPane.add("Save and Restore", createSaveAndRestoreData());
+
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(tabbedPane, BorderLayout.CENTER);
+
+        // Add Logout Button
+        JButton logoutButton = new JButton("Logout");
+        logoutButton.addActionListener(e -> {
+            currentUser = null;
+            JOptionPane.showMessageDialog(this, "Logged out successfully!");
+            CardLayout cl = (CardLayout) getContentPane().getLayout();
+            cl.show(getContentPane(), "LoginPanel");
+        });
+
+        mainPanel.add(logoutButton, BorderLayout.SOUTH);
+        return mainPanel;
     }
 
     public static void main(String[] args) {
