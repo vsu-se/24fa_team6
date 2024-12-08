@@ -1,4 +1,4 @@
-package CS4321;
+package src.CS4321;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

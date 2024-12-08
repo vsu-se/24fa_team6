@@ -1,6 +1,5 @@
-package test.java.CS4321;
+package src.CS4321;
 
-import CS4321.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package CS4321;
+package src.CS4321;
 
 import java.util.List;
 
@@ -17,4 +17,8 @@ public class CategoryController {
     public List<Category> getCategories(){
         return categories;
     }
+
+//    public void clearCategories() {
+//        categories.clear();
+//    }
 }

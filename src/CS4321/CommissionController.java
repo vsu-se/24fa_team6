@@ -1,4 +1,4 @@
-package CS4321;
+package src.CS4321;
 
 public class CommissionController {
     private Commission commission;
