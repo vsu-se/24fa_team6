@@ -21,18 +21,16 @@ public class UserSystemTest {
         }
     }
 
-    /* I have no idea why this is not giving me the Expected Results,
-    it keeps giving me "Username already exists. Please choose a different username."
-     */
-//    @Test
-//    public void testRegisterUserSuccessfully() {
-//        String result = userSystem.register("testUser", "password123");
-//        assertEquals("registration successful", result);
-//    }
+
+    @Test
+    public void testRegisterUserSuccessfully() {
+        String result = userSystem.register("Randomuser", "1234");
+        assertEquals("registration successful", result);
+    }
 
     @Test
     public void testRegisterUserWithExistingUsername() {
-        userSystem.register("testUser", "password123");
+        userSystem.register("khristian", "1234");
         String result = userSystem.register("testUser", "newPassword");
         assertEquals("Username already exists. Please choose a different username.", result);
     }
